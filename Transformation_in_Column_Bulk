@@ -1,0 +1,19 @@
+	
+	let
+    Clean = (inputTable as table) =>
+        let                       
+            // Apply the transformation to each column
+            
+            ColumnNames = List.Select(Table.ColumnNames(inputTable),each not (Text.Contains(_,"146") or Text.Contains(_, "147") or Text.Contains(_, "149"))),
+            columnTypes = List.Transform(ColumnNames, each {_, type text}),
+            ChangedTypeToText = Table.TransformColumnTypes(inputTable, columnTypes),
+            ReplaceNulls = Table.TransformColumns(inputTable, List.Transform(ColumnNames, each {_, each Text.Replace(_, "---", "")})),
+            Replaceunderscore =  Table.TransformColumns(ReplaceNulls, List.Transform(ColumnNames, each {_, each Text.Replace(_, "_", " ")})),
+            Replaceform =  Table.TransformColumns(Replaceunderscore, List.Transform(ColumnNames, each {_, each Text.Replace(_, "form", "")})),
+            ProperLetters = Table.TransformColumns(Replaceform, List.Transform(ColumnNames, each {_, each Text.Proper(_)})),
+            TextTrim = Table.TransformColumns(ProperLetters, List.Transform(ColumnNames, each {_, each Text.Trim(_)}))
+            
+        in
+            TextTrim
+in
+    Clean
