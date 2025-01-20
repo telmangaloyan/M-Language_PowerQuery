@@ -1,0 +1,26 @@
+let
+    GetCoordinates = (Address as text) as record =>
+    let
+        // Define your API key
+        APIKey = ApIKey,
+
+        // Construct the URL for the API request
+        BaseUrl = "https://maps.googleapis.com/maps/api/geocode/json",
+        RequestUrl = BaseUrl & "?address=" & Uri.EscapeDataString(Address) & "&key=" & APIKey,
+
+        // Make the HTTP request
+        Response = Web.Contents(RequestUrl),
+        JsonResponse = Json.Document(Response),
+
+        // Extract latitude and longitude
+        Location = try JsonResponse[results]{0}[geometry][location] otherwise null,
+
+        // Return the results as a record
+        Result = if Location <> null then
+            [Latitude = Location[lat], Longitude = Location[lng]]
+        else
+            [Latitude = null, Longitude = null]
+    in
+        Result
+in
+    GetCoordinates
