@@ -1,0 +1,33 @@
+let
+    GetCountry = (Latitude as text, Longitude as text) as text =>
+    let
+        // Define your API key
+        APIKey = ApIKey,
+
+        // Construct the URL for the reverse geocoding API request
+        BaseUrl = "https://maps.googleapis.com/maps/api/geocode/json",
+        RequestUrl = BaseUrl & "?latlng=" & Latitude & "," & Longitude & "&key=" & APIKey,
+
+        // Make the HTTP request
+        Response = Web.Contents(RequestUrl),
+        JsonResponse = Json.Document(Response),
+
+        // Extract the country name from the results
+        AddressComponents = try JsonResponse[results]{0}[address_components] otherwise null,
+        Country = if AddressComponents <> null then
+            Text.Combine(
+                List.Transform(
+                    List.Select(
+                        AddressComponents, 
+                        each List.Contains([types], "country")
+                    ), 
+                    each [long_name]
+                ),
+                ", "
+            )
+        else
+            null
+    in
+        Country
+in
+    GetCountry
