@@ -1,0 +1,36 @@
+(PromptQUestion as text , promptinput as text) =>
+
+let
+    
+    APiKey_OpenAi = ApiKey
+    // API endpoint
+    url = "https://api.openai.com/v1/completions",
+    
+    // Define headers
+    headers = [
+        #"Content-Type" = "application/json",
+        Authorization = "Bearer" & APiKey_OpenAi
+    ],
+
+// Request body (converted to binary format)
+    body = Json.FromValue([
+        model = "gpt-3.5-turbo",
+        messages = {
+            [role = "system", content = "You are a helpful assistent."],
+            [role = "User", content = PromptQUestion & promptinput as text]
+        },
+        max_tokens = 100,
+        temperature = 0.5
+    ]),
+
+    // Make the POST request
+    response = Web.Contents(url, [
+        Headers = headers,
+        Content = body
+    ]),
+
+    // Parse the JSON response
+    jsonResponse = Json.Document(response),
+    completions = jsonResponse[choices]{0}[message][content]
+in
+    completions
